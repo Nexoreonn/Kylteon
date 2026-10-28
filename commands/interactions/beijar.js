@@ -1,5 +1,5 @@
 // Ajuste o caminho conforme a estrutura do seu projeto
-const criarInteracao = require('../utils/criarInteracao');
+const criarInteracao = require('../../events/affectionInteractions.js');
 const CDN = 'https://cdn.jsdelivr.net/gh/Nexoreonn/GIFs@main/Beijar';
 
 module.exports = criarInteracao({
