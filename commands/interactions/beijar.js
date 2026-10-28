@@ -6,7 +6,7 @@ module.exports = criarInteracao({
   name: 'beijar',
   description: '[Interação] Dê um beijo em alguém!',
   optionDescription: 'Quem você quer beijar?',
-  color: 0xff8fa3, // cor padrão (cada escolha pode ter a sua)
+  color: 0x460FBF, // cor padrão (cada escolha pode ter a sua)
 
   ownerMessage: 'YAYYY, meu dono me beijou! 😻',
   botMessage: 'Calma lá que você não vai querer me beijar, eu arranho... E meu dono vai ficar bravo! 👀',
@@ -43,7 +43,7 @@ module.exports = criarInteracao({
       {
         name: 'Lábios',
         value: 'labios',
-        color: 0xff4d6d,
+        color: 0x460FBF,
         messages: [
           '{autor} beijou {alvo} nos lábios! 💋',
           '{autor} deu um beijão em {alvo}! 😳💋',

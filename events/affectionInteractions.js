@@ -39,7 +39,7 @@ function criarInteracao(config) {
     gifs,
     menu,
     optionDescription = 'Quem?',
-    color = 0xff69b4,
+    color = 0x460FBF,
     botMessage = 'Eu? Melhor não... 👀',
     selfMessage = '{autor}, você não pode fazer isso consigo mesmo! 😅',
     ownerMessage,
