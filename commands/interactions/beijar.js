@@ -4,7 +4,7 @@ const CDN = 'https://cdn.jsdelivr.net/gh/Nexoreonn/GIFs@main/Beijar';
 
 module.exports = criarInteracao({
   name: 'beijar',
-  description: 'Dê um beijo em alguém!',
+  description: '[Interação] Dê um beijo em alguém!',
   optionDescription: 'Quem você quer beijar?',
   color: 0xff8fa3, // cor padrão (cada escolha pode ter a sua)
 

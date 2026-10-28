@@ -3,7 +3,7 @@ const CDN = 'https://cdn.jsdelivr.net/gh/Nexoreonn/GIFs@main/Abraçar';
 
 module.exports = criarInteracao({
   name: 'abraçar',
-  description: 'Dê um abraço em alguém!',
+  description: '[Interação] Dê um abraço em alguém!',
   optionDescription: 'Quem você quer abraçar?',
   color: 0x460FBF,
 

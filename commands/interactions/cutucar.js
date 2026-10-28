@@ -3,7 +3,7 @@ const CDN = 'https://cdn.jsdelivr.net/gh/Nexoreonn/GIFs@main/Cutucar';
 
 module.exports = criarInteracao({
   name: 'cutucar',
-  description: 'Cutuque alguém!',
+  description: '[Interação] Cutuque alguém!',
   optionDescription: 'Quem você quer cutucar?',
   color: 0x460FBF,
 
