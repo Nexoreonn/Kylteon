@@ -382,7 +382,7 @@ async function playRound(interaction, message, teams, size, round) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('reactiontime')
-    .setDescription('Minigame de reflexo: equipe Vermelha vs Azul')
+    .setDescription('[Jogos] Minigame de reflexo: equipe Vermelha vs Azul')
     .addIntegerOption((opt) =>
       opt
         .setName('jogadores')
