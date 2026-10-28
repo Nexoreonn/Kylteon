@@ -8,6 +8,7 @@ module.exports = criarInteracao({
   optionDescription: 'Quem você quer beijar?',
   color: 0xff8fa3, // cor padrão (cada escolha pode ter a sua)
 
+  ownerMessage: 'YAYYY, meu dono me beijou! 😻',
   botMessage: 'Calma lá que você não vai querer me beijar, eu arranho... E meu dono vai ficar bravo! 👀',
   selfMessage: '{autor} mandou um beijo pro espelho... 💋',
 

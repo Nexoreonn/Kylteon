@@ -31,6 +31,7 @@ module.exports = criarInteracao({
     `${CDN}/pjsk-airi.gif`,
   ],
 
+  ownerMessage: 'Hmpf... Vou abrir uma exceção só porque você é meu dono! 💜',
   botMessage: 'Acho que você não vai querer me abraçar, eu arranho... 👀',
   selfMessage: '{autor} tentou se abraçar... Chama alguém pra te dar um abraço de verdade! 🥲',
 });

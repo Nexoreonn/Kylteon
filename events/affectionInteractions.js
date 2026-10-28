@@ -18,6 +18,8 @@ const fill = (template, autor, alvo) => template.replaceAll('{autor}', autor).re
  * @param {number}   [config.color]             Cor do embed (hex)
  * @param {string}   [config.botMessage]        Texto quando o alvo é o próprio bot
  * @param {string}   [config.selfMessage]       Texto quando o alvo é o próprio autor
+ * @param {string|string[]} [config.ownerMessage] Texto quando o DONO do bot usa o comando nele (aceita uma lista para sortear)
+ * @param {string}   [config.ownerId]           ID do dono (se omitido, usa process.env.OWNER_ID)
  * @param {object}   [config.menu]              Menu opcional de escolhas (ex: tipo de beijo)
  * @param {string}   config.menu.name             Nome da opção (minúsculas, sem espaços). Ex: 'tipo'
  * @param {string}   config.menu.description      Descrição da opção
@@ -40,7 +42,12 @@ function criarInteracao(config) {
     color = 0xff69b4,
     botMessage = 'Eu? Melhor não... 👀',
     selfMessage = '{autor}, você não pode fazer isso consigo mesmo! 😅',
+    ownerMessage,
+    ownerId,
   } = config;
+
+  // ID do dono: o do comando, ou o da variável de ambiente OWNER_ID
+  const resolvedOwnerId = ownerId ?? process.env.OWNER_ID ?? null;
 
   // ───── Validação (erros aparecem ao iniciar o bot, não no meio de um comando) ─────
   if (!name || !description) {
@@ -101,6 +108,15 @@ function criarInteracao(config) {
 
       // Alvo é o próprio bot: só manda a mensagem, sem gif
       if (target.id === interaction.client.user.id) {
+        // Se quem usou é o dono e existe uma resposta especial, usa ela
+        const isOwner = resolvedOwnerId !== null && interaction.user.id === resolvedOwnerId;
+        if (isOwner && ownerMessage) {
+          const text = Array.isArray(ownerMessage) ? pick(ownerMessage) : ownerMessage;
+          return interaction.reply({
+            content: fill(text, autor, alvo),
+            allowedMentions: { parse: [] },
+          });
+        }
         return interaction.reply({ content: botMessage });
       }
 
