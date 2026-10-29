@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const dotenv = require('dotenv');
 dotenv.config();
+require('./web.js');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const BOT_TOKEN = process.env.BOT_TOKEN;

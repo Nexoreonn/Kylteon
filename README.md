@@ -122,8 +122,8 @@ Use `{autor}` e `{alvo}` nos textos. Depois rode `npm run deploy:commands` para 
 
 ## 📄 Documentos legais
 
-- [Termos de Serviço](/src/termos.html)
-- [Política de Privacidade](/src/privacidade.html)
+- [Termos de Serviço](/public/termos.html)
+- [Política de Privacidade](/public/privacidade.html)
 
 ## 📜 Licença
 
