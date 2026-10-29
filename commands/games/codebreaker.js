@@ -504,18 +504,18 @@ const opcaoDificuldade = (o) =>
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('codebreaker')
-    .setDescription('🔐 Descubra o código secreto criado pelo bot!')
+    .setDescription('[Jogo] Descubra o código secreto criado pelo bot!')
     .setDMPermission(false)
     .addSubcommand((sub) =>
       sub
         .setName('solo')
-        .setDescription('Jogue sozinho contra o código secreto')
+        .setDescription('[Jogo] Jogue sozinho contra o código secreto')
         .addIntegerOption(opcaoDificuldade),
     )
     .addSubcommand((sub) =>
       sub
         .setName('equipe')
-        .setDescription('Duelo: duas equipes disputam quem descobre o código primeiro')
+        .setDescription('[Jogo] Duas equipes disputam quem descobre o código primeiro')
         .addIntegerOption((o) =>
           o
             .setName('membros')

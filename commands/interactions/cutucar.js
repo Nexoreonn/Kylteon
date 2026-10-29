@@ -23,7 +23,16 @@ module.exports = criarInteracao({
     `${CDN}/watanare-anime.gif`
   ],
 
-  ownerMessage: 'Hmpf! Até você, meu dono, me cutucando?! 😾',
-  botMessage: 'Ei! Porque você está me cutucando? 😾',
+  ownerMessage: [
+    'Hmpf! Até você, meu dono, me cutucando?!',
+    'O que foi, Nex? Você quer me cutucar também?',
+    'Hm? Fala!'
+  ],
+  botMessage: [
+    'Ei! Porque você está me cutucando?!',
+    'Ai! Para com isso!',
+    'Porr- Quero dizer, Camraba! Vai me deixar com raiva?!',
+    'Para com isso, {autor} teimoso!'
+  ],
   selfMessage: '{autor} se... cutucou? Que estranho. 👀',
 });
