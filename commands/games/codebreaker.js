@@ -6,8 +6,12 @@
  *  - Intents: Guilds, GuildMessages e MessageContent (privilegiada, ative no Developer Portal)
  *
  * Subcomandos:
- *  - /codebreaker solo [dificuldade]                 -> o host joga sozinho
+ *  - /codebreaker todos [dificuldade]                -> qualquer pessoa do canal pode jogar
+ *  - /codebreaker solo [dificuldade]                 -> só o host joga
  *  - /codebreaker equipe <membros> [dificuldade]     -> duelo entre 2 equipes (1 a 4 membros por equipe)
+ *
+ * Várias partidas podem rodar ao mesmo tempo no mesmo canal: cada uma é identificada
+ * pelo Embed que o jogador responde. Cada host pode ter 1 partida ativa por canal.
  */
 
 const { randomInt } = require('node:crypto');
@@ -27,6 +31,7 @@ const DIGITOS_MIN = 2;
 const DIGITOS_MAX = 10;
 const MEMBROS_MAX = 4;
 const MAX_HISTORICO = 8; // tentativas exibidas no Embed
+const MAX_RANKING = 10; // jogadores listados nas estatísticas finais
 const TEMPO_LOBBY = 5 * 60 * 1000; // 5 min para montar as equipes
 const TEMPO_INATIVIDADE = 10 * 60 * 1000; // 10 min sem palpites válidos encerra a partida
 
@@ -41,12 +46,19 @@ const EQUIPES = {
   vermelha: { nome: 'Equipe Vermelha', emoji: '🔴', cor: 0xe74c3c },
 };
 
-/** Partidas em andamento (uma por canal). */
+/** Partidas em andamento (id da partida -> partida). Várias por canal são permitidas. */
 const partidasAtivas = new Map();
+let contadorPartidas = 0;
 
 // ───────────────────────────── Utilidades ─────────────────────────────
 const efemero = (content) => ({ content, flags: MessageFlags.Ephemeral });
 const plural = (n, singular, plur) => `${n} ${n === 1 ? singular : plur}`;
+
+// Em português, 0 e 1 ficam no singular (0 Posição Correta, 1 Dígito certo)
+const pluralPt = (n, singular, plur) => `${n} ${n > 1 ? plur : singular}`;
+
+const textoResultado = ({ digitos, posicoes }) =>
+  `${pluralPt(digitos, 'Dígito certo', 'Dígitos certos')} | ${pluralPt(posicoes, 'Posição Correta', 'Posições Corretas')}`;
 
 function gerarCodigo(tamanho) {
   return Array.from({ length: tamanho }, () => randomInt(10)).join('');
@@ -75,12 +87,6 @@ function avaliar(codigo, palpite) {
   return { digitos, posicoes };
 }
 
-// Em português, 0 e 1 ficam no singular (0 Posição Correta, 1 Dígito certo)
-const pluralPt = (n, singular, plur) => `${n} ${n > 1 ? plur : singular}`;
-
-const textoResultado = ({ digitos, posicoes }) =>
-  `${pluralPt(digitos, 'Dígito certo', 'Dígitos certos')} | ${pluralPt(posicoes, 'Posição Correta', 'Posições Corretas')}`;
-
 function formatarTempo(ms) {
   const total = Math.round(ms / 1000);
   const m = Math.floor(total / 60);
@@ -103,26 +109,42 @@ function totalTentativasEquipe(p, idsEquipe) {
 }
 
 function embedJogo(p) {
-  const solo = p.modo === 'solo';
-
   // Resultado do último palpite em destaque (o histórico continua abaixo)
   const ultimo = p.historico[p.historico.length - 1];
   const destaque = ultimo
     ? `\n\n## 🎯 ${textoResultado(ultimo)}\nPalpite de <@${ultimo.userId}>: \`${ultimo.palpite}\``
     : '';
 
+  const titulos = {
+    solo: '🔐 Codebreaker — Solo',
+    todos: '🌐 Codebreaker — Aberto a todos',
+    duelo: '⚔️ Codebreaker — Duelo de Equipes',
+  };
+
+  const quemJoga =
+    p.modo === 'todos'
+      ? 'Qualquer pessoa do canal pode jogar!\n'
+      : '';
+
   const embed = new EmbedBuilder()
     .setColor(!ultimo ? COR_INICIO : ultimo.digitos > 0 || ultimo.posicoes > 0 ? COR_ACERTO : COR_ERRO)
-    .setTitle(solo ? '🔐 Codebreaker — Solo' : '⚔️ Codebreaker — Duelo de Equipes')
+    .setTitle(titulos[p.modo])
     .setDescription(
       `Descubra o código secreto de **${p.digitos} dígitos**!\n` +
+        quemJoga +
         `Use **Responder** nesta mensagem com o seu palpite.` +
         destaque,
     );
 
-  if (solo) {
+  if (p.modo === 'solo') {
     embed.addFields(
       { name: '👤 Jogador', value: `<@${p.hostId}>`, inline: true },
+      { name: '🎯 Tentativas', value: String(p.totalTentativas), inline: true },
+    );
+  } else if (p.modo === 'todos') {
+    embed.addFields(
+      { name: '🎩 Host', value: `<@${p.hostId}>`, inline: true },
+      { name: '👥 Jogadores', value: String(p.jogadores.size), inline: true },
       { name: '🎯 Tentativas', value: String(p.totalTentativas), inline: true },
     );
   } else {
@@ -154,7 +176,7 @@ function payloadJogo(p) {
     components: [
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setCustomId(`cb_encerrar_${p.canalId}`)
+          .setCustomId(`cb_encerrar_${p.id}`)
           .setLabel('Encerrar partida')
           .setEmoji('🏳️')
           .setStyle(ButtonStyle.Danger),
@@ -165,14 +187,22 @@ function payloadJogo(p) {
 
 // ───────────────────────────── Embeds: resultado final ─────────────────────────────
 function blocoEstatisticas(p, ids) {
+  if (!ids.length) return '*Ninguém jogou.*';
+
   const lista = ids
     .map((id) => ({ id, ...p.jogadores.get(id) }))
     .sort((a, b) => b.tentativas - a.tentativas || b.acertos - a.acertos);
 
-  const linhas = lista.map(
-    (j, i) =>
-      `**${i + 1}.** <@${j.id}> — ${plural(j.tentativas, 'tentativa', 'tentativas')} • ${plural(j.acertos, 'acerto', 'acertos')}`,
-  );
+  const linhas = lista
+    .slice(0, MAX_RANKING)
+    .map(
+      (j, i) =>
+        `**${i + 1}.** <@${j.id}> — ${plural(j.tentativas, 'tentativa', 'tentativas')} • ${plural(j.acertos, 'acerto', 'acertos')}`,
+    );
+
+  if (lista.length > MAX_RANKING) {
+    linhas.push(`*…e mais ${plural(lista.length - MAX_RANKING, 'jogador', 'jogadores')}*`);
+  }
 
   if (lista.length > 1) {
     const maisAcertou = [...lista].sort((a, b) => b.acertos - a.acertos || b.tentativas - a.tentativas)[0];
@@ -184,13 +214,12 @@ function blocoEstatisticas(p, ids) {
 }
 
 function embedFinal(p, motivo, vencedorId) {
-  const solo = p.modo === 'solo';
+  const duelo = p.modo === 'duelo';
   const tempo = formatarTempo(Date.now() - p.iniciadoEm);
   const embed = new EmbedBuilder();
 
   if (motivo === 'vitoria') {
-    const equipeVencedora = p.jogadores.get(vencedorId).equipe;
-    if (solo) {
+    if (!duelo) {
       embed
         .setColor(COR_VITORIA)
         .setTitle('🏆 Código decifrado!')
@@ -198,7 +227,7 @@ function embedFinal(p, motivo, vencedorId) {
           `<@${vencedorId}> descobriu o código \`${p.codigo}\` em **${plural(p.totalTentativas, 'tentativa', 'tentativas')}** (${tempo})!`,
         );
     } else {
-      const eq = EQUIPES[equipeVencedora];
+      const eq = EQUIPES[p.jogadores.get(vencedorId).equipe];
       embed
         .setColor(eq.cor)
         .setTitle(`🏆 ${eq.emoji} ${eq.nome} venceu!`)
@@ -212,8 +241,11 @@ function embedFinal(p, motivo, vencedorId) {
     embed.setColor(COR_NEUTRA).setTitle('⏹️ Partida encerrada').setDescription(`${aviso}\nO código era \`${p.codigo}\`.`);
   }
 
-  if (solo) {
-    embed.addFields({ name: '📊 Estatísticas', value: blocoEstatisticas(p, [p.hostId]) });
+  if (!duelo) {
+    embed.addFields({
+      name: p.modo === 'solo' ? '📊 Estatísticas' : '📊 Ranking de tentativas',
+      value: blocoEstatisticas(p, [...p.jogadores.keys()]),
+    });
   } else {
     for (const [chave, ids] of Object.entries(p.equipes)) {
       const eq = EQUIPES[chave];
@@ -239,7 +271,8 @@ function payloadLobby(p) {
     .setDescription(
       `Host: <@${p.hostId}>\n` +
         `Código de **${p.digitos} dígitos** • até **${p.maxMembros}** por equipe.\n\n` +
-        `Escolha uma equipe nos botões abaixo. O host inicia quando as duas equipes tiverem ao menos 1 jogador.`,
+        `Escolha uma equipe nos botões abaixo. Só quem estiver nas equipes poderá jogar esta partida.\n` +
+        `O host inicia quando as duas equipes tiverem ao menos 1 jogador.`,
     );
 
   for (const [chave, ids] of Object.entries(p.equipes)) {
@@ -267,10 +300,11 @@ function payloadLobby(p) {
 // ───────────────────────────── Lógica da partida ─────────────────────────────
 function criarPartida({ canal, hostId, modo, digitos, maxMembros = 1 }) {
   return {
+    id: `${Date.now().toString(36)}${++contadorPartidas}`,
     canal,
     canalId: canal.id,
     hostId,
-    modo, // 'solo' | 'duelo'
+    modo, // 'solo' | 'todos' | 'duelo'
     digitos,
     maxMembros,
     fase: 'lobby', // 'lobby' | 'jogo'
@@ -307,12 +341,12 @@ async function atualizarEmbed(p) {
 }
 
 function iniciarColetores(p) {
-  // Só vale palpite que: responde ao Embed atual, vem de um jogador da partida
-  // e é composto apenas por dígitos, com o tamanho exato do código.
+  // Só vale palpite que: responde ao Embed DESTA partida, vem de um jogador permitido
+  // (no modo "todos", qualquer um) e é composto apenas por dígitos, com o tamanho exato do código.
   const filtro = (m) => {
     if (m.author.bot) return false;
     if (m.reference?.messageId !== p.mensagem.id) return false;
-    if (!p.jogadores.has(m.author.id)) return false;
+    if (p.modo !== 'todos' && !p.jogadores.has(m.author.id)) return false;
     const texto = m.content.trim();
     return texto.length === p.digitos && /^\d+$/.test(texto);
   };
@@ -331,7 +365,7 @@ function iniciarColetores(p) {
 
   p.coletorBtn = p.canal.createMessageComponentCollector({
     componentType: ComponentType.Button,
-    filter: (i) => i.customId === `cb_encerrar_${p.canalId}`,
+    filter: (i) => i.customId === `cb_encerrar_${p.id}`,
   });
 
   p.coletorBtn.on('collect', async (i) => {
@@ -350,7 +384,13 @@ async function tratarPalpite(p, msg) {
 
   const palpite = msg.content.trim();
   const resultado = avaliar(p.codigo, palpite);
-  const jogador = p.jogadores.get(msg.author.id);
+
+  // No modo "todos", o jogador é registrado no primeiro palpite
+  let jogador = p.jogadores.get(msg.author.id);
+  if (!jogador) {
+    jogador = novoJogador(null);
+    p.jogadores.set(msg.author.id, jogador);
+  }
 
   jogador.tentativas++;
   if (resultado.digitos > 0) jogador.acertos++;
@@ -385,7 +425,7 @@ async function finalizar(p, motivo, { msg, interacao } = {}) {
   p.encerrada = true;
   p.coletorMsg?.stop('fim');
   p.coletorBtn?.stop('fim');
-  partidasAtivas.delete(p.canalId);
+  partidasAtivas.delete(p.id);
 
   const embed = embedFinal(p, motivo, msg?.author.id);
 
@@ -400,12 +440,12 @@ async function finalizar(p, motivo, { msg, interacao } = {}) {
   }
 }
 
-// ───────────────────────────── Modo solo ─────────────────────────────
-async function iniciarSolo(interaction, p) {
+// ───────────────────────────── Modos solo e todos ─────────────────────────────
+async function iniciarDireto(interaction, p) {
   p.fase = 'jogo';
   p.codigo = gerarCodigo(p.digitos);
   p.iniciadoEm = Date.now();
-  p.jogadores.set(p.hostId, novoJogador(null));
+  if (p.modo === 'solo') p.jogadores.set(p.hostId, novoJogador(null));
 
   await interaction.reply(payloadJogo(p));
   p.mensagem = await interaction.fetchReply();
@@ -468,7 +508,7 @@ async function abrirLobby(interaction, p) {
         case 'cb_cancelar': {
           if (id !== p.hostId) return await i.reply(efemero('Só o host pode cancelar.'));
           coletor.stop('cancelada');
-          partidasAtivas.delete(p.canalId);
+          partidasAtivas.delete(p.id);
           return await i.update({
             embeds: [new EmbedBuilder().setColor(COR_NEUTRA).setTitle('❌ Partida cancelada').setDescription('O host cancelou o duelo.')],
             components: [],
@@ -482,7 +522,7 @@ async function abrirLobby(interaction, p) {
 
   coletor.on('end', async (_, motivo) => {
     if (motivo !== 'time') return;
-    partidasAtivas.delete(p.canalId);
+    partidasAtivas.delete(p.id);
     await msgLobby
       .edit({
         embeds: [new EmbedBuilder().setColor(COR_NEUTRA).setTitle('⌛ Lobby expirado').setDescription('O duelo não foi iniciado a tempo.')],
@@ -504,8 +544,14 @@ const opcaoDificuldade = (o) =>
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('codebreaker')
-    .setDescription('[Jogo] Descubra o código secreto criado pelo bot!')
+    .setDescription('Descubra o código secreto criado pelo bot!')
     .setDMPermission(false)
+    .addSubcommand((sub) =>
+      sub
+        .setName('todos')
+        .setDescription('[Jogo] Aberto a todos: qualquer pessoa do canal pode jogar')
+        .addIntegerOption(opcaoDificuldade),
+    )
     .addSubcommand((sub) =>
       sub
         .setName('solo')
@@ -529,9 +575,12 @@ module.exports = {
 
   async execute(interaction) {
     const canal = interaction.channel ?? (await interaction.client.channels.fetch(interaction.channelId));
+    const hostId = interaction.user.id;
 
-    if (partidasAtivas.has(canal.id)) {
-      return interaction.reply(efemero('⚠️ Já existe uma partida de Codebreaker em andamento neste canal.'));
+    // Várias partidas por canal são permitidas, mas cada host pode ter só uma por vez
+    const jaTemPartida = [...partidasAtivas.values()].some((x) => x.hostId === hostId && x.canalId === canal.id);
+    if (jaTemPartida) {
+      return interaction.reply(efemero('⚠️ Você já tem uma partida de Codebreaker em andamento neste canal.'));
     }
 
     const sub = interaction.options.getSubcommand();
@@ -539,19 +588,19 @@ module.exports = {
 
     const p = criarPartida({
       canal,
-      hostId: interaction.user.id,
-      modo: sub === 'solo' ? 'solo' : 'duelo',
+      hostId,
+      modo: sub === 'equipe' ? 'duelo' : sub, // 'solo' | 'todos' | 'duelo'
       digitos,
       maxMembros: sub === 'equipe' ? interaction.options.getInteger('membros') : 1,
     });
 
-    partidasAtivas.set(canal.id, p);
+    partidasAtivas.set(p.id, p);
 
     try {
-      if (sub === 'solo') await iniciarSolo(interaction, p);
-      else await abrirLobby(interaction, p);
+      if (sub === 'equipe') await abrirLobby(interaction, p);
+      else await iniciarDireto(interaction, p);
     } catch (erro) {
-      partidasAtivas.delete(canal.id);
+      partidasAtivas.delete(p.id);
       throw erro;
     }
   },
