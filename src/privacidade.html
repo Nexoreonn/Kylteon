@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Política de Privacidade — Kylteon</title>
+<style>
+:root{--bg:#f6f4fc;--card:#fff;--text:#1d1730;--muted:#5d5675;--accent:#460fbf;--line:#e4def5;--hl:#fff3c4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f0b1c;--card:#191330;--text:#ece8f8;--muted:#a69fc0;--accent:#a78bfa;--line:#2c2450;--hl:#4a3d00}}
+:root[data-theme="dark"]{--bg:#0f0b1c;--card:#191330;--text:#ece8f8;--muted:#a69fc0;--accent:#a78bfa;--line:#2c2450;--hl:#4a3d00}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--accent);color:#fff;padding:40px 20px;text-align:center}
+header h1{margin:0 0 6px;font-size:clamp(1.6rem,5vw,2.2rem)}
+header p{margin:0;opacity:.9}
+nav{display:flex;gap:8px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+nav a{color:#fff;text-decoration:none;padding:6px 16px;border-radius:99px;border:1px solid rgba(255,255,255,.5);font-size:.95rem}
+nav a.on{background:#fff;color:#460fbf;font-weight:600}
+main{max-width:760px;margin:-20px auto 40px;padding:0 16px}
+article{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px clamp(18px,4vw,36px)}
+h2{font-size:1.15rem;color:var(--accent);margin:28px 0 6px}
+h2:first-of-type{margin-top:0}
+p,li{color:var(--text)}
+ul{padding-left:22px}
+.muted{color:var(--muted);font-size:.92rem}
+.box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:12px 0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:480px;font-size:.93rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--accent)}
+mark{background:var(--hl);color:var(--text);padding:0 4px;border-radius:4px}
+footer{text-align:center;color:var(--muted);font-size:.88rem;padding:0 16px 32px}
+footer a,article a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Política de Privacidade</h1>
+  <p>Kylteon — bot para Discord</p>
+  <nav><a href="termos.html">Termos de Serviço</a><a class="on" href="#">Política de Privacidade</a></nav>
+</header>
+<main>
+<article>
+  <p class="muted">Última atualização: 29 de outubro de 2026</p>
+
+  <div class="box"><strong>Resumo:</strong> o Kylteon não possui banco de dados, não vende dados e não cria perfis de usuários. As informações usadas nas partidas ficam apenas na memória enquanto o jogo acontece.</div>
+
+  <h2>1. Quem somos</h2>
+  <p>O Kylteon é um bot para Discord criado e mantido por Nexoreon (“nós”). Esta política explica quais dados o Bot acessa e como eles são tratados, em linha com a Lei Geral de Proteção de Dados (LGPD – Lei 13.709/2018).</p>
+
+  <h2>2. Dados que o Bot acessa</h2>
+  <div class="scroll"><table>
+    <tr><th>Dado</th><th>Para quê</th></tr>
+    <tr><td>ID, nome e menção do usuário</td><td>Identificar quem usou um comando, montar equipes e mostrar resultados e rankings.</td></tr>
+    <tr><td>IDs de servidor e de canal</td><td>Responder no canal correto e impedir duas partidas conflitantes no mesmo canal.</td></tr>
+    <tr><td>Opções dos comandos</td><td>Processar o que você pediu (usuário-alvo, dificuldade, tamanho das equipes etc.).</td></tr>
+    <tr><td>Conteúdo de mensagens (limitado)</td><td>Detectar menção direta ao Bot e ler palpites numéricos enviados como resposta a uma partida de <code>/codebreaker</code>.</td></tr>
+    <tr><td>Tempos de reação e palpites</td><td>Calcular o resultado das partidas de <code>/reactiontime</code> e <code>/codebreaker</code>.</td></tr>
+  </table></div>
+
+  <h2>3. Sobre a leitura de mensagens</h2>
+  <p>Para funcionar, o Bot usa a permissão do Discord chamada <em>Message Content Intent</em>. Ela é usada <strong>somente</strong> para (a) verificar se a mensagem menciona o Bot e (b) validar palpites do Codebreaker feitos como resposta à mensagem da partida. Mensagens que não se encaixam nisso são ignoradas e <strong>não são armazenadas, copiadas ou analisadas</strong>.</p>
+
+  <h2>4. Armazenamento e retenção</h2>
+  <ul>
+    <li>O Bot <strong>não utiliza banco de dados</strong> nem grava os dados acima em disco.</li>
+    <li>Os dados de partidas ficam apenas na memória e são descartados quando a partida termina, é cancelada, expira por inatividade ou quando o Bot é reiniciado.</li>
+    <li>Podem existir registros técnicos de erros (logs) no ambiente de hospedagem, usados só para corrigir falhas. Eles podem conter IDs, mas não o conteúdo das suas conversas.</li>
+    <li>Mensagens e embeds enviados pelo Bot ficam no Discord e seguem as regras e a retenção do próprio Discord.</li>
+  </ul>
+
+  <h2>5. Compartilhamento com terceiros</h2>
+  <p>Não vendemos, alugamos nem compartilhamos dados pessoais para fins comerciais. O funcionamento do Bot depende de:</p>
+  <ul>
+    <li><strong>Discord</strong>, plataforma onde o Bot opera, regida pela <a href="https://discord.com/privacy" target="_blank" rel="noopener">Política de Privacidade do Discord</a>;</li>
+    <li><strong>Provedor de hospedagem</strong>, onde o código do Bot é executado;</li>
+    <li><strong>Serviço de hospedagem de GIFs</strong> (repositório no GitHub servido via jsDelivr), de onde vêm as imagens dos comandos de interação.</li>
+  </ul>
+
+  <h2>6. Finalidade e base legal</h2>
+  <p>Tratamos esses dados apenas para executar os comandos que você solicitou e fazer o Bot funcionar, o que se enquadra na execução do serviço pedido por você e no legítimo interesse de operar o Bot com segurança.</p>
+
+  <h2>7. Seus direitos</h2>
+  <p>Como não mantemos dados pessoais armazenados de forma permanente, normalmente não há o que apagar. Ainda assim, você pode solicitar informações sobre o tratamento, correção ou exclusão de qualquer dado eventualmente associado a você, entrando em contato pelos canais abaixo. Você também pode parar de usar o Bot a qualquer momento, e o administrador do servidor pode removê-lo.</p>
+
+  <h2>8. Crianças e adolescentes</h2>
+  <p>O Bot não é direcionado a menores de 13 anos, idade mínima do Discord, e não coleta dados de forma intencional para identificar a idade dos usuários. Se você acredita que uma criança usou o Bot em violação das regras do Discord, entre em contato.</p>
+
+  <h2>9. Segurança</h2>
+  <p>Adotamos medidas razoáveis para proteger o Bot, como manter o token de acesso fora do código-fonte público. Nenhum sistema é totalmente imune a falhas, mas o fato de não armazenarmos dados pessoais reduz bastante os riscos.</p>
+
+  <h2>10. Alterações nesta política</h2>
+  <p>Podemos atualizar esta política quando o Bot ganhar novos recursos ou a lei mudar. A data da última atualização fica no topo da página.</p>
+
+  <h2>11. Contato</h2>
+  <p>Dúvidas ou solicitações sobre privacidade: <a href="https://discord.gg/qd4Sy9QSJQ" target="_blank" rel="noopener noreferrer">Servidor do Bot</a></p>
+</article>
+</main>
+<footer>© 2026 Kylteon · Feito por Nexoreon · <a href="termos.html">Termos de Serviço</a></footer>
+</body>
+</html>
