@@ -117,7 +117,11 @@ function criarInteracao(config) {
             allowedMentions: { parse: [] },
           });
         }
-        return interaction.reply({ content: botMessage });
+        const botText = Array.isArray(botMessage) ? pick(botMessage) : botMessage;
+return interaction.reply({
+  content: fill(botText, autor, alvo),
+  allowedMentions: { parse: [] },
+});
       }
 
       // Alvo é o próprio autor
