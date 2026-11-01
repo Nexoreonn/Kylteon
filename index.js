@@ -52,6 +52,19 @@ for (const file of eventFiles) {
 	}
 }
 
+client.on('debug', (info) => console.log('[debug]', info));
+client.on('error', (error) => console.error('[client error]', error));
+client.on('shardError', (error) => console.error('[shard error]', error));
+client.rest.on('rateLimited', (info) => console.warn('[rate limit]', info));
+
+console.log('Tentando logar...');
+client.login(BOT_TOKEN)
+	.then(() => console.log('login() resolveu'))
+	.catch((error) => {
+		console.error('Falha ao iniciar sessão no Discord:', error.message);
+		process.exitCode = 1;
+	});
+
 client.login(BOT_TOKEN).catch((error) => {
 	console.error('Falha ao iniciar sessão no Discord:', error.message);
 	process.exitCode = 1;
