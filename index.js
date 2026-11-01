@@ -64,8 +64,3 @@ client.login(BOT_TOKEN)
 		console.error('Falha ao iniciar sessão no Discord:', error.message);
 		process.exitCode = 1;
 	});
-
-client.login(BOT_TOKEN).catch((error) => {
-	console.error('Falha ao iniciar sessão no Discord:', error.message);
-	process.exitCode = 1;
-});
