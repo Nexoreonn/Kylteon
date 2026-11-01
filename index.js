@@ -6,10 +6,17 @@ const path = require('node:path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const BOT_TOKEN = process.env.BOT_TOKEN;
 
+fetch('https://discord.com/api/v10/gateway', { signal: AbortSignal.timeout(15000) })
+	.then((r) => console.log('[teste] discord.com respondeu com status', r.status))
+	.catch((e) => console.error('[teste] falhou ou deu timeout:', e.name, e.message)
+);
+
+client.rest.on('restDebug', (info) => console.log('[rest]', info));
+
 if (!BOT_TOKEN) {
 	console.error('BOT_TOKEN não está definido no .env.');
 	process.exit(1);
-}
+};
 
 const client = new Client({
 	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
