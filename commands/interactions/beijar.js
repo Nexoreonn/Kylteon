@@ -39,7 +39,7 @@ module.exports = criarInteracao({
         // Troque pelos seus links DIRETOS de gif
         gifs: [
           `${CDN}/anime-hug.gif`,
-          `${CDN}/anime-kiss%(2).gif`,
+          `${CDN}/anime-kiss%20(2).gif`,
           `${CDN}/anime-kiss-no-lick.gif`,
           `${CDN}/anime-kiss.gif`,
           `${CDN}/kiss-cheek.gif`,
