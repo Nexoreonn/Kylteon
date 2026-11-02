@@ -11,8 +11,6 @@ fetch('https://discord.com/api/v10/gateway', { signal: AbortSignal.timeout(15000
 	.catch((e) => console.error('[teste] falhou ou deu timeout:', e.name, e.message)
 );
 
-client.rest.on('restDebug', (info) => console.log('[rest]', info));
-
 if (!BOT_TOKEN) {
 	console.error('BOT_TOKEN não está definido no .env.');
 	process.exit(1);
@@ -70,4 +68,7 @@ client.login(BOT_TOKEN)
 	.catch((error) => {
 		console.error('Falha ao iniciar sessão no Discord:', error.message);
 		process.exitCode = 1;
-	});
+	}
+);
+
+client.rest.on('restDebug', (info) => console.log('[rest]', info));
